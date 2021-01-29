@@ -1,9 +1,17 @@
 const Post = require("../models/post");
 
 exports.postUpload = async (req, res, next) => {
+  const { data } = req.body;
   try {
-    console.log(req.body);
-    return res.status(201);
+    // JSON.parse
+    const { contents, hashtags } = JSON.parse(data);
+    // 게시글 생성
+    const post = await Post.create({
+      contents: contents,
+      hashtags: hashtags,
+    });
+    console.log(post);
+    return res.status(201).json({ post });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
