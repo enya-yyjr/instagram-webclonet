@@ -19,3 +19,18 @@ exports.postUpload = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getPosts = async (req, res, next) => {
+  try {
+    const posts = await Post.find({});
+    if (!posts) {
+      return res.status(204).json({ message: "Cannot find posts" });
+    }
+    return res.status(200).json({ posts: posts });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
