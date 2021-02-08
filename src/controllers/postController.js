@@ -11,7 +11,7 @@ exports.postUpload = async (req, res, next) => {
       hashtags: hashtags,
     });
     console.log(post);
-    return res.status(201).json({ post });
+    return res.status(201).json({ message: "Completed writing", post: post });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
