@@ -22,6 +22,7 @@ exports.postUpload = async (req, res, next) => {
 
 exports.getPosts = async (req, res, next) => {
   try {
+    // Post 전체 조회
     const posts = await Post.find({});
     if (!posts) {
       return res.status(204).json({ message: "Cannot find posts" });
