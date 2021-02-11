@@ -1,8 +1,15 @@
 const Post = require("../models/post");
 
 exports.postUpload = async (req, res, next) => {
-  const { data } = req.body;
+  const {
+    body: { data },
+    file,
+  } = req;
   try {
+    // 이미지 파일이 없는 경우 (현재는 사용하지 않음. 추후 주석 해제)
+    // if (!file) {
+    //   return res.status(401).json({ message: "Check the file format" });
+    // }
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
