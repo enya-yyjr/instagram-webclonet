@@ -5,6 +5,7 @@ const postSchema = new mongoose.Schema({
   contents: { type: String, required: true },
   hashtags: [{ type: String }],
   likeUsers: [{ type: String }],
+  createdAt: { type: String },
 });
 
 const Post = mongoose.model("Post", postSchema);
