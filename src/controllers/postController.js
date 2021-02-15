@@ -1,4 +1,7 @@
 const Post = require("../models/post");
+const moment = require("moment");
+require("moment-timezone");
+require("moment/locale/ko");
 
 exports.postUpload = async (req, res, next) => {
   const {
@@ -16,6 +19,7 @@ exports.postUpload = async (req, res, next) => {
     const post = await Post.create({
       contents: contents,
       hashtags: hashtags,
+      createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
     console.log(post);
     return res.status(201).json({ message: "Completed writing", post: post });
