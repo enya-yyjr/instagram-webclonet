@@ -1,7 +1,6 @@
 const Post = require("../models/post");
-const moment = require("moment");
-require("moment-timezone");
-require("moment/locale/ko");
+
+const moment = require("../../moment");
 
 exports.postUpload = async (req, res, next) => {
   const {
