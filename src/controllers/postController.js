@@ -1,6 +1,6 @@
 const Post = require("../models/post");
 
-const moment = require("../../moment");
+const moment = require("../moment");
 
 exports.postUpload = async (req, res, next) => {
   const {
