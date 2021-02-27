@@ -1,7 +1,11 @@
 const express = require("express");
 const multer = require("multer");
 
-const { postUpload, getPosts } = require("../controllers/postController");
+const {
+  postUpload,
+  getPosts,
+  postDetail,
+} = require("../controllers/postController");
 
 const fileFilter = (req, file, cb) => {
   if (
@@ -24,5 +28,6 @@ const router = express.Router();
 
 router.post("/upload", upload.single("imageFile"), postUpload);
 router.get("/", getPosts);
+router.get("/:postId", postDetail);
 
 module.exports = router;

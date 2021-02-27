@@ -45,3 +45,19 @@ exports.getPosts = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.postDetail = async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(204).json({ message: "Cannot find post" });
+    }
+    return res.status(200).json({ post });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
