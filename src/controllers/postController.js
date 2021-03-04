@@ -16,11 +16,11 @@ exports.postUpload = async (req, res, next) => {
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
+      writer: "6193fcdac8c9643a821a8da0",
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    console.log(post);
     return res.status(201).json({ message: "Completed writing", post: post });
   } catch (error) {
     if (!error.statusCode) {
