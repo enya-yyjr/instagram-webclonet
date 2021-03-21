@@ -6,6 +6,7 @@ exports.postUpload = async (req, res, next) => {
   const {
     body: { data },
     file,
+    userId,
   } = req;
   try {
     // 이미지 파일이 없는 경우 (현재는 사용하지 않음. 추후 주석 해제)
@@ -16,7 +17,7 @@ exports.postUpload = async (req, res, next) => {
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
-      writer: "6193fcdac8c9643a821a8da0",
+      writer: userId,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),

@@ -7,6 +7,8 @@ const {
   postDetail,
 } = require("../controllers/postController");
 
+const { isAuth } = require("../middlewares/authMiddleware");
+
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === "image/png" ||
@@ -26,7 +28,7 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/upload", upload.single("imageFile"), postUpload);
+router.post("/upload", isAuth, upload.single("imageFile"), postUpload);
 router.get("/", getPosts);
 router.get("/:postId", postDetail);
 

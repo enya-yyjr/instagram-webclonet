@@ -36,6 +36,6 @@ exports.isAuth = (req, res, next) => {
     error.message = "Not authenticated";
     throw error;
   }
-  req.decodedToken = decodedToken;
+  req.userId = decodedToken.userId;
   next();
 };
