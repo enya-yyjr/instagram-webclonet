@@ -34,9 +34,7 @@ exports.postUpload = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   try {
     // Post 전체 조회
-    const posts = await Post.find({}).populate("writer", {
-      name: 1,
-    });
+    const posts = await Post.find({}).populate("writer", { userId: 1 });
     if (!posts) {
       return res.status(404).json({ message: "Cannot find posts" });
     }
@@ -52,7 +50,7 @@ exports.getPosts = async (req, res, next) => {
 exports.postDetail = async (req, res, next) => {
   const { postId } = req.params;
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("writer", { userId: 1 });
     if (!post) {
       return res.status(404).json({ message: "Cannot find post" });
     }
