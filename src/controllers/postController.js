@@ -6,6 +6,7 @@ exports.postUpload = async (req, res, next) => {
   const {
     body: { data },
     file,
+    userId,
   } = req;
   try {
     // 이미지 파일이 없는 경우 (현재는 사용하지 않음. 추후 주석 해제)
@@ -16,7 +17,7 @@ exports.postUpload = async (req, res, next) => {
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
-      writer: "6193fcdac8c9643a821a8da0",
+      writer: userId,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
@@ -33,9 +34,9 @@ exports.postUpload = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   try {
     // Post 전체 조회
-    const posts = await Post.find({});
+    const posts = await Post.find({}).populate("writer", { userId: 1 });
     if (!posts) {
-      return res.status(204).json({ message: "Cannot find posts" });
+      return res.status(404).json({ message: "Cannot find posts" });
     }
     return res.status(200).json({ posts: posts });
   } catch (error) {
@@ -49,9 +50,9 @@ exports.getPosts = async (req, res, next) => {
 exports.postDetail = async (req, res, next) => {
   const { postId } = req.params;
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("writer", { userId: 1 });
     if (!post) {
-      return res.status(204).json({ message: "Cannot find post" });
+      return res.status(404).json({ message: "Cannot find post" });
     }
     return res.status(200).json({ post });
   } catch (error) {
