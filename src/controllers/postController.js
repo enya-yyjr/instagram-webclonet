@@ -22,7 +22,30 @@ exports.postUpload = async (req, res, next) => {
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    return res.status(201).json({ message: "Completed writing", post: post });
+    return res.status(201).json({ message: "Completed writing" });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+exports.updatePost = async (req, res, next) => {
+  const {
+    file,
+    body: { data },
+    params: { postId },
+  } = req;
+  try {
+    // 이미지 수정
+    // 게시글 수정
+    const { contents, hashtags } = JSON.parse(data);
+    const post = await Post.findById(postId);
+    post.contents = contents;
+    post.hashtags = hashtags;
+    await post.save();
+    return res.status(200).json({ message: "Update complete" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

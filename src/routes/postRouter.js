@@ -5,6 +5,7 @@ const {
   postUpload,
   getPosts,
   postDetail,
+  updatePost,
 } = require("../controllers/postController");
 
 const { isAuth } = require("../middlewares/authMiddleware");
@@ -28,7 +29,8 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/upload", isAuth, upload.single("imageFile"), postUpload);
+router.post("/", isAuth, upload.single("imageFile"), postUpload);
+router.put("/:postId", upload.single("imageFile"), updatePost);
 router.get("/", getPosts);
 router.get("/:postId", postDetail);
 
