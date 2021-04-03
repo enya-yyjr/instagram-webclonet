@@ -6,6 +6,7 @@ const {
   getPosts,
   postDetail,
   updatePost,
+  deletePost,
 } = require("../controllers/postController");
 
 const { isAuth } = require("../middlewares/authMiddleware");
@@ -31,6 +32,7 @@ const router = express.Router();
 
 router.post("/", isAuth, upload.single("imageFile"), postUpload);
 router.put("/:postId", upload.single("imageFile"), updatePost);
+router.delete("/:postId", deletePost);
 router.get("/", getPosts);
 router.get("/:postId", postDetail);
 

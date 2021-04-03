@@ -54,6 +54,19 @@ exports.updatePost = async (req, res, next) => {
   }
 };
 
+exports.deletePost = async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    await Post.deleteOne({ _id: postId });
+    return res.status(200).json({ message: "Delete complete" });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
 exports.getPosts = async (req, res, next) => {
   try {
     // Post 전체 조회
