@@ -31,8 +31,8 @@ const upload = multer({
 const router = express.Router();
 
 router.post("/", isAuth, upload.single("imageFile"), postUpload);
-router.put("/:postId", upload.single("imageFile"), updatePost);
-router.delete("/:postId", deletePost);
+router.put("/:postId", isAuth, upload.single("imageFile"), updatePost);
+router.delete("/:postId", isAuth, deletePost);
 router.get("/", getPosts);
 router.get("/:postId", postDetail);
 

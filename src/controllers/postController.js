@@ -57,6 +57,10 @@ exports.updatePost = async (req, res, next) => {
 exports.deletePost = async (req, res, next) => {
   const { postId } = req.params;
   try {
+    const post = await Post.exists({ _id: postId });
+    if (!post) {
+      return res.status(404).json({ message: "Not exist post" });
+    }
     await Post.deleteOne({ _id: postId });
     return res.status(200).json({ message: "Delete complete" });
   } catch (error) {
