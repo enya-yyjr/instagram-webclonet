@@ -1,6 +1,8 @@
-const Post = require("../models/post");
+const path = require("path");
 
+const Post = require("../models/post");
 const moment = require("../moment");
+const { bucket, storageBucket } = require("../firebase");
 
 exports.postUpload = async (req, res, next) => {
   const {
@@ -9,20 +11,31 @@ exports.postUpload = async (req, res, next) => {
     userId,
   } = req;
   try {
-    // 이미지 파일이 없는 경우 (현재는 사용하지 않음. 추후 주석 해제)
+    // 이미지 파일이 없는 경우
     // if (!file) {
     //   return res.status(401).json({ message: "Check the file format" });
     // }
+    // 이미지 업로드
+    // const ext = path.extname(file.originalname);
+    // const fname = path.basename(file.originalname, ext);
+    // const filename = `${userId}_${Date.now()}_${fname}${ext}`;
+    // await bucket
+    //   .file(`images/${filename}`)
+    //   .createWriteStream()
+    //   .end(file.buffer);
+    // const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
       writer: userId,
+      imageUrl: imageUrl,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    return res.status(201).json({ message: "Completed writing" });
+    console.log(post);
+    return res.status(201).json({ message: "Completed writing", post: post });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
