@@ -29,7 +29,7 @@ exports.postUpload = async (req, res, next) => {
     // 게시글 생성
     const post = await Post.create({
       writer: userId,
-      imageUrl: imageUrl,
+      // imageUrl: imageUrl,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
