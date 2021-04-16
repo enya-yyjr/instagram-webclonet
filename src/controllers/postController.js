@@ -50,12 +50,27 @@ exports.updatePost = async (req, res, next) => {
     file,
     body: { data },
     params: { postId },
+    userId,
   } = req;
   try {
-    // 이미지 수정
-    // 게시글 수정
     const { contents, hashtags } = JSON.parse(data);
     const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Not exist post" });
+    }
+    // 이미지 수정
+    await bucket.file(`images/${post.filename}`).delete();
+    const ext = path.extname(file.originalname);
+    const fname = path.basename(file.originalname, ext);
+    const filename = `${userId}_${Date.now()}_${fname}${ext}`;
+    await bucket
+      .file(`images/${filename}`)
+      .createWriteStream()
+      .end(file.buffer);
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
+    // 게시글 수정
+    post.filename = filename;
+    post.imageUrl = imageUrl;
     post.contents = contents;
     post.hashtags = hashtags;
     await post.save();
