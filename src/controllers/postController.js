@@ -2,6 +2,7 @@ const path = require("path");
 
 const Post = require("../models/post");
 const moment = require("../moment");
+const { uploadImage, deleteImage } = require("./imageController");
 const { bucket, storageBucket } = require("../firebase");
 
 exports.postUpload = async (req, res, next) => {
@@ -16,14 +17,7 @@ exports.postUpload = async (req, res, next) => {
       return res.status(401).json({ message: "Check the file format" });
     }
     // 이미지 업로드
-    const ext = path.extname(file.originalname);
-    const fname = path.basename(file.originalname, ext);
-    const filename = `${userId}_${Date.now()}_${fname}${ext}`;
-    await bucket
-      .file(`images/${filename}`)
-      .createWriteStream()
-      .end(file.buffer);
-    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
+    const { filename, imageUrl } = await uploadImage(file, userId);
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
@@ -59,15 +53,8 @@ exports.updatePost = async (req, res, next) => {
       return res.status(404).json({ message: "Not exist post" });
     }
     // 이미지 수정
-    await bucket.file(`images/${post.filename}`).delete();
-    const ext = path.extname(file.originalname);
-    const fname = path.basename(file.originalname, ext);
-    const filename = `${userId}_${Date.now()}_${fname}${ext}`;
-    await bucket
-      .file(`images/${filename}`)
-      .createWriteStream()
-      .end(file.buffer);
-    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
+    await deleteImage(post.filename);
+    const { filename, imageUrl } = await uploadImage(file, userId);
     // 게시글 수정
     post.filename = filename;
     post.imageUrl = imageUrl;
@@ -90,7 +77,7 @@ exports.deletePost = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Not exist post" });
     }
-    await bucket.file(`images/${post.filename}`).delete();
+    await deleteImage(post.filename);
     await Post.deleteOne({ _id: postId });
     return res.status(200).json({ message: "Delete complete" });
   } catch (error) {
