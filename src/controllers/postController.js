@@ -1,9 +1,6 @@
-const path = require("path");
-
 const Post = require("../models/post");
 const moment = require("../moment");
 const { uploadImage, deleteImage } = require("./imageController");
-const { bucket, storageBucket } = require("../firebase");
 
 exports.postUpload = async (req, res, next) => {
   const {
