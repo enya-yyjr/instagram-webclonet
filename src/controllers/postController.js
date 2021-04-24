@@ -10,11 +10,11 @@ exports.postUpload = async (req, res, next) => {
   } = req;
   try {
     // 이미지 파일이 없는 경우
-    if (!file) {
-      return res.status(401).json({ message: "Check the file format" });
-    }
+    // if (!file) {
+    //   return res.status(401).json({ message: "Check the file format" });
+    // }
     // 이미지 업로드
-    const { filename, imageUrl } = await uploadImage(file, userId);
+    // const { filename, imageUrl } = await uploadImage(file, userId);
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
@@ -50,8 +50,8 @@ exports.updatePost = async (req, res, next) => {
       return res.status(404).json({ message: "Not exist post" });
     }
     // 이미지 수정
-    await deleteImage(post.filename);
-    const { filename, imageUrl } = await uploadImage(file, userId);
+    // await deleteImage(post.filename);
+    // const { filename, imageUrl } = await uploadImage(file, userId);
     // 게시글 수정
     post.filename = filename;
     post.imageUrl = imageUrl;
@@ -74,7 +74,7 @@ exports.deletePost = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Not exist post" });
     }
-    await deleteImage(post.filename);
+    // await deleteImage(post.filename);
     await Post.deleteOne({ _id: postId });
     return res.status(200).json({ message: "Delete complete" });
   } catch (error) {
