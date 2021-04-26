@@ -20,8 +20,8 @@ exports.postUpload = async (req, res, next) => {
     // 게시글 생성
     const post = await Post.create({
       writer: userId,
-      filename: filename,
-      imageUrl: imageUrl,
+      // filename: filename,
+      // imageUrl: imageUrl,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
@@ -53,8 +53,8 @@ exports.updatePost = async (req, res, next) => {
     // await deleteImage(post.filename);
     // const { filename, imageUrl } = await uploadImage(file, userId);
     // 게시글 수정
-    post.filename = filename;
-    post.imageUrl = imageUrl;
+    // post.filename = filename;
+    // post.imageUrl = imageUrl;
     post.contents = contents;
     post.hashtags = hashtags;
     await post.save();
