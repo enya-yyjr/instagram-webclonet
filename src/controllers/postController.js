@@ -1,6 +1,6 @@
 const Post = require("../models/post");
 const moment = require("../moment");
-const { uploadImage, deleteImage } = require("./imageController");
+// const { uploadImage, deleteImage } = require("./imageController");
 
 exports.postUpload = async (req, res, next) => {
   const {
@@ -50,7 +50,7 @@ exports.updatePost = async (req, res, next) => {
       return res.status(404).json({ message: "Not exist post" });
     }
     // 이미지 수정
-    // await deleteImage(post.filename);
+    // await deleteImage(post.filename, userId);
     // const { filename, imageUrl } = await uploadImage(file, userId);
     // 게시글 수정
     // post.filename = filename;
@@ -68,13 +68,16 @@ exports.updatePost = async (req, res, next) => {
 };
 
 exports.deletePost = async (req, res, next) => {
-  const { postId } = req.params;
+  const {
+    params: { postId },
+    userId,
+  } = req;
   try {
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: "Not exist post" });
     }
-    // await deleteImage(post.filename);
+    // await deleteImage(post.filename, userId);
     await Post.deleteOne({ _id: postId });
     return res.status(200).json({ message: "Delete complete" });
   } catch (error) {

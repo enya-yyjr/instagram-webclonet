@@ -7,9 +7,9 @@ exports.uploadImage = async (file, userId) => {
     // 이미지 업로드
     const ext = path.extname(file.originalname);
     const fname = path.basename(file.originalname, ext);
-    const filename = `${userId}_${Date.now()}_${fname}${ext}`;
+    const filename = `${Date.now()}_${fname}${ext}`;
     await bucket
-      .file(`images/${filename}`)
+      .file(`images/${userId}/${filename}`)
       .createWriteStream()
       .end(file.buffer);
     const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
@@ -20,9 +20,9 @@ exports.uploadImage = async (file, userId) => {
   }
 };
 
-exports.deleteImage = async (imageName) => {
+exports.deleteImage = async (imageName, userId) => {
   try {
-    await bucket.file(`images/${imageName}`).delete();
+    await bucket.file(`images/${userId}/${imageName}`).delete();
   } catch (error) {
     const errors = new Error("Delete image error");
     throw errors;
