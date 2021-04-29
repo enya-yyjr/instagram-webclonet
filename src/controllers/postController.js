@@ -26,7 +26,6 @@ exports.postUpload = async (req, res, next) => {
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    console.log(post);
     return res.status(201).json({ message: "Completed writing", post: post });
   } catch (error) {
     if (!error.statusCode) {
