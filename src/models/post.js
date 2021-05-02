@@ -6,6 +6,7 @@ const postSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  filename: { type: String },
   imageUrl: { type: String, default: null },
   contents: { type: String, required: true },
   hashtags: [{ type: String }],

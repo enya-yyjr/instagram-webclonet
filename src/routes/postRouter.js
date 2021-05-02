@@ -5,6 +5,8 @@ const {
   postUpload,
   getPosts,
   postDetail,
+  updatePost,
+  deletePost,
 } = require("../controllers/postController");
 
 const { isAuth } = require("../middlewares/authMiddleware");
@@ -28,7 +30,9 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/upload", isAuth, upload.single("imageFile"), postUpload);
+router.post("/", isAuth, upload.single("imageFile"), postUpload);
+router.put("/:postId", isAuth, upload.single("imageFile"), updatePost);
+router.delete("/:postId", isAuth, deletePost);
 router.get("/", getPosts);
 router.get("/:postId", postDetail);
 
