@@ -106,7 +106,9 @@ exports.getPosts = async (req, res, next) => {
 exports.postDetail = async (req, res, next) => {
   const { postId } = req.params;
   try {
-    const post = await Post.findById(postId).populate("writer", { userId: 1 });
+    const post = await Post.findById(postId)
+      .populate("writer", { userId: 1 })
+      .populate("comments", { __v: 0 });
     if (!post) {
       return res.status(404).json({ message: "Cannot find post" });
     }
