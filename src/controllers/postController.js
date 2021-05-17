@@ -18,7 +18,7 @@ exports.postUpload = async (req, res, next) => {
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
-    const post = await Post.create({
+    await Post.create({
       writer: userId,
       // filename: filename,
       // imageUrl: imageUrl,
@@ -26,7 +26,7 @@ exports.postUpload = async (req, res, next) => {
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    return res.status(201).json({ message: "Completed writing", post: post });
+    return res.status(201).json({ ok: true, message: "Completed writing" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -57,7 +57,7 @@ exports.updatePost = async (req, res, next) => {
     post.contents = contents;
     post.hashtags = hashtags;
     await post.save();
-    return res.status(200).json({ message: "Update complete" });
+    return res.status(200).json({ ok: true, message: "Update complete" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -78,7 +78,7 @@ exports.deletePost = async (req, res, next) => {
     }
     // await deleteImage(post.filename, userId);
     await Post.deleteOne({ _id: postId });
-    return res.status(200).json({ message: "Delete complete" });
+    return res.status(200).json({ ok: true, message: "Delete complete" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -94,7 +94,7 @@ exports.getPosts = async (req, res, next) => {
     if (!posts) {
       return res.status(404).json({ message: "Cannot find posts" });
     }
-    return res.status(200).json({ posts: posts });
+    return res.status(200).json({ ok: true, posts: posts });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -112,7 +112,7 @@ exports.postDetail = async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Cannot find post" });
     }
-    return res.status(200).json({ post });
+    return res.status(200).json({ ok: true, post: post });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
