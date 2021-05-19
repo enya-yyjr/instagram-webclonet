@@ -22,7 +22,7 @@ exports.writeComment = async (req, res, next) => {
     await post.save();
     return res
       .status(201)
-      .json({ message: "Comment write complete", comment: comment });
+      .json({ ok: true, message: "Comment write complete", comment: comment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -47,7 +47,9 @@ exports.deleteComment = async (req, res, next) => {
     await post.save();
     // Comment 삭제
     await Comment.findByIdAndDelete(commentId);
-    return res.status(200).json({ message: "Comment delete complete" });
+    return res
+      .status(200)
+      .json({ ok: true, message: "Comment delete complete" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
