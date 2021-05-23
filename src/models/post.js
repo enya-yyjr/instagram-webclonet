@@ -11,6 +11,7 @@ const postSchema = new mongoose.Schema({
   contents: { type: String, required: true },
   hashtags: [{ type: String }],
   likeUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
   createdAt: { type: String, required: true },
 });
 
