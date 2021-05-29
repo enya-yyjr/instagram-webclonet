@@ -1,4 +1,5 @@
 const Post = require("../models/post");
+const Comment = require("../models/comment");
 const moment = require("../moment");
 // const { uploadImage, deleteImage } = require("./imageController");
 
@@ -18,7 +19,7 @@ exports.postUpload = async (req, res, next) => {
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
-    await Post.create({
+    const post = await Post.create({
       writer: userId,
       // filename: filename,
       // imageUrl: imageUrl,
@@ -26,7 +27,9 @@ exports.postUpload = async (req, res, next) => {
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    return res.status(201).json({ ok: true, message: "Completed writing" });
+    return res
+      .status(201)
+      .json({ ok: true, message: "Completed writing", post: post });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -90,7 +93,9 @@ exports.deletePost = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   try {
     // Post 전체 조회
-    const posts = await Post.find({}).populate("writer", { userId: 1 });
+    const posts = await Post.find({})
+      .populate("writer", { userId: 1 })
+      .populate("comments");
     if (!posts) {
       return res.status(404).json({ message: "Cannot find posts" });
     }
@@ -106,13 +111,14 @@ exports.getPosts = async (req, res, next) => {
 exports.postDetail = async (req, res, next) => {
   const { postId } = req.params;
   try {
-    const post = await Post.findById(postId)
-      .populate("writer", { userId: 1 })
-      .populate("comments", { __v: 0 });
+    const post = await Post.findById(postId).populate("writer", { userId: 1 });
+    const comment = await Comment.find({ postId: postId }).populate(
+      "childCommentId"
+    );
     if (!post) {
       return res.status(404).json({ message: "Cannot find post" });
     }
-    return res.status(200).json({ ok: true, post: post });
+    return res.status(200).json({ ok: true, post, comment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

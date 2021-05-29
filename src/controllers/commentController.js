@@ -1,19 +1,39 @@
 const Comment = require("../models/comment");
 const Post = require("../models/post");
+const ReplyComment = require("../models/replyComment");
 
 const moment = require("../moment");
 
 exports.writeComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId, contents },
+    body: { postId, commentId, taggedPerson, contents },
   } = req;
   try {
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ message: "Post not exist" });
     }
+    // 대댓글
+    if (commentId && taggedPerson) {
+      const reComment = await ReplyComment.create({
+        postId: postId,
+        writer: userId,
+        parentsId: commentId,
+        taggedPerson: "@" + taggedPerson,
+        contents: contents,
+        createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+      });
+      const parentsComment = await Comment.findById(commentId);
+      parentsComment.childCommentId.push(reComment._id);
+      await parentsComment.save();
+      return res
+        .status(201)
+        .json({ ok: true, message: "Comment write complete", reComment });
+    }
+    // 댓글
     const comment = await Comment.create({
+      postId: postId,
       writer: userId,
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),

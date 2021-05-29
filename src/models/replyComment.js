@@ -1,16 +1,15 @@
 const mongoose = require("mongoose");
 
-const commentSchema = new mongoose.Schema({
+const replyCommentSchema = new mongoose.Schema({
   postId: { type: mongoose.Schema.Types.ObjectId },
   writer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  taggedPerson: { type: String },
   contents: { type: String },
-  childCommentId: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "ReplyComment" },
-  ],
+  parentsId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
   createdAt: { type: String },
   like: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
-const Comment = mongoose.model("Comment", commentSchema);
+const ReplyComment = mongoose.model("ReplyComment", replyCommentSchema);
 
-module.exports = Comment;
+module.exports = ReplyComment;
