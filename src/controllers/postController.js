@@ -49,7 +49,7 @@ exports.updatePost = async (req, res, next) => {
     const { contents, hashtags } = JSON.parse(data);
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: "Not exist post" });
+      return res.status(400).json({ message: "Not exist post" });
     }
     // 이미지 수정
     // await deleteImage(post.filename, userId);
@@ -77,7 +77,7 @@ exports.deletePost = async (req, res, next) => {
   try {
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: "Not exist post" });
+      return res.status(400).json({ message: "Not exist post" });
     }
     // await deleteImage(post.filename, userId);
     await Post.deleteOne({ _id: postId });
@@ -97,7 +97,7 @@ exports.getPosts = async (req, res, next) => {
       .populate("writer", { userId: 1 })
       .populate("comments");
     if (!posts) {
-      return res.status(404).json({ message: "Cannot find posts" });
+      return res.status(400).json({ message: "Cannot find posts" });
     }
     return res.status(200).json({ ok: true, posts: posts });
   } catch (error) {
@@ -116,12 +116,41 @@ exports.postDetail = async (req, res, next) => {
       "childCommentId"
     );
     if (!post) {
-      return res.status(404).json({ message: "Cannot find post" });
+      return res.status(400).json({ message: "Cannot find post" });
     }
     return res.status(200).json({ ok: true, post, comment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+exports.postLikeUnlike = async (req, res, next) => {
+  const {
+    userId,
+    params: { postId },
+  } = req;
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(400).json({ message: "Cannot find post" });
+    }
+    // 이미 좋아요를 누른 경우
+    if (post.likeUsers.includes(userId)) {
+      post.likeUsers.splice(post.likeUsers.indexOf(userId), 1);
+      await post.save();
+      return res.status(200).json({ ok: true, message: "Unlike success" });
+    }
+    // 좋아요를 누르지 않은 경우
+    post.likeUsers.push(userId);
+    await post.save();
+    return res.status(200).json({ ok: true, message: "Like success" });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+      error.message = "Post like/unlike failed";
     }
     next(error);
   }

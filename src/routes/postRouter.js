@@ -8,6 +8,7 @@ const {
   postDetail,
   updatePost,
   deletePost,
+  postLikeUnlike,
 } = require("../controllers/postController");
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.put("/:postId", isAuth, upload.single("imageFile"), updatePost);
 router.delete("/:postId", isAuth, deletePost);
 router.get("/", getPosts);
 router.get("/:postId", postDetail);
+router.put("/:postId/like", isAuth, postLikeUnlike);
 
 module.exports = router;
