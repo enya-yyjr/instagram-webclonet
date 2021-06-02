@@ -12,7 +12,7 @@ exports.writeComment = async (req, res, next) => {
   try {
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: "Post not exist" });
+      return res.status(400).json({ message: "Post not exist" });
     }
     // 대댓글
     if (commentId && taggedPerson) {
@@ -61,7 +61,7 @@ exports.deleteComment = async (req, res, next) => {
     // Post의 comments 배열에서 comment삭제
     const post = await Post.findOne({ _id: postId, writer: userId });
     if (!post) {
-      return res.status(403).json({ message: "Cannot find post" });
+      return res.status(400).json({ message: "Cannot find post" });
     }
     post.comments.splice(post.comments.indexOf(commentId), 1);
     await post.save();
@@ -88,6 +88,9 @@ exports.commentLikeUnlike = async (req, res, next) => {
     // 댓글 데이터가 없으면 대댓글에서 검색
     if (!comment) {
       const reComment = await ReplyComment.findById(commentId);
+      if (!reComment) {
+        return res.status(400).json({ message: "Cannot find comment" });
+      }
       if (reComment.like.includes(userId)) {
         reComment.like.splice(reComment.like.indexOf(userId), 1);
         await reComment.save();
