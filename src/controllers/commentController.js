@@ -88,9 +88,11 @@ exports.commentLikeUnlike = async (req, res, next) => {
     // 댓글 데이터가 없으면 대댓글에서 검색
     if (!comment) {
       const reComment = await ReplyComment.findById(commentId);
+      // 대댓글 데이터가 없는 경우
       if (!reComment) {
         return res.status(400).json({ message: "Cannot find comment" });
       }
+      // 대댓글 데이터가 있는 경우 좋아요 삭제
       if (reComment.like.includes(userId)) {
         reComment.like.splice(reComment.like.indexOf(userId), 1);
         await reComment.save();
@@ -98,13 +100,14 @@ exports.commentLikeUnlike = async (req, res, next) => {
           .status(200)
           .json({ ok: true, message: "Reply comment unlike success" });
       }
+      // 좋아요를 누르지 않은 경우
       reComment.like.push(userId);
       await reComment.save();
       return res
         .status(200)
         .json({ ok: true, message: "Reply comment like success" });
     }
-    // 이미 댓글의 좋아요를 누른 경우
+    // 이미 댓글의 좋아요를 누른 경우 좋아요 취소
     if (comment.like.includes(userId)) {
       comment.like.splice(comment.like.indexOf(userId), 1);
       await comment.save();
@@ -112,6 +115,7 @@ exports.commentLikeUnlike = async (req, res, next) => {
         .status(200)
         .json({ ok: true, message: "Comment unlike success" });
     }
+    // 좋아요를 누르지 않은 경우
     comment.like.push(userId);
     await comment.save();
     return res.status(200).json({ ok: true, message: "Comment like success" });
