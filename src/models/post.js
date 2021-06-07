@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+const Comment = require("./comment");
+const ReplyComment = require("./replyComment");
+
 const postSchema = new mongoose.Schema({
   writer: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,6 +16,13 @@ const postSchema = new mongoose.Schema({
   likeUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
   createdAt: { type: String, required: true },
+});
+
+postSchema.pre("deleteOne", async function (next) {
+  const { _id } = this.getFilter();
+  await Comment.deleteMany({ postId: _id });
+  await ReplyComment.deleteMany({ postId: _id });
+  next();
 });
 
 const Post = mongoose.model("Post", postSchema);
