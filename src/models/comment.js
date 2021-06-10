@@ -7,6 +7,8 @@ const commentSchema = new mongoose.Schema({
   childCommentId: [
     { type: mongoose.Schema.Types.ObjectId, ref: "ReplyComment" },
   ],
+  taggedPerson: [{ type: String }],
+  hashtags: [{ type: String }],
   createdAt: { type: String },
   like: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });

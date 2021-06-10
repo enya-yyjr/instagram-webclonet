@@ -7,20 +7,22 @@ const moment = require("../moment");
 exports.writeComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId, commentId, taggedPerson, contents },
+    body: { postId, commentId, contents },
   } = req;
   try {
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(400).json({ message: "Post not exist" });
     }
-    // 대댓글
-    if (commentId && taggedPerson) {
+    const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
+    const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
+    if (commentId) {
       const reComment = await ReplyComment.create({
         postId: postId,
-        writer: userId,
         parentsId: commentId,
-        taggedPerson: "@" + taggedPerson,
+        writer: userId,
+        hashtags: hashtags,
+        taggedPerson: taggedPerson,
         contents: contents,
         createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       });
@@ -29,12 +31,13 @@ exports.writeComment = async (req, res, next) => {
       await parentsComment.save();
       return res
         .status(201)
-        .json({ ok: true, message: "Comment write complete", reComment });
+        .json({ ok: true, message: "Reply Comment write complete", reComment });
     }
-    // 댓글
     const comment = await Comment.create({
       postId: postId,
       writer: userId,
+      hashtags: hashtags,
+      taggedPerson: taggedPerson,
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
@@ -42,7 +45,7 @@ exports.writeComment = async (req, res, next) => {
     await post.save();
     return res
       .status(201)
-      .json({ ok: true, message: "Comment write complete", comment: comment });
+      .json({ ok: true, message: "Comment write complete", comment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
