@@ -7,7 +7,7 @@ const moment = require("../moment");
 exports.writeComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId, commentId, contents },
+    body: { postId, parentsId, contents },
   } = req;
   try {
     const post = await Post.findById(postId);
@@ -16,17 +16,17 @@ exports.writeComment = async (req, res, next) => {
     }
     const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
     const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
-    if (commentId) {
+    if (parentsId) {
       const reComment = await ReplyComment.create({
         postId: postId,
-        parentsId: commentId,
+        parentsId: parentsId,
         writer: userId,
         hashtags: hashtags,
         taggedPerson: taggedPerson,
         contents: contents,
         createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       });
-      const parentsComment = await Comment.findById(commentId);
+      const parentsComment = await Comment.findById(parentsId);
       parentsComment.childCommentId.push(reComment._id);
       await parentsComment.save();
       return res
@@ -57,10 +57,22 @@ exports.writeComment = async (req, res, next) => {
 exports.deleteComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId },
-    params: { commentId },
+    // params: { postId, commentId },
+    query: { postId, pCommentId, commentId },
   } = req;
   try {
+    if (pCommentId) {
+      const comment = await Comment.findById(pCommentId);
+      comment.childCommentId.splice(
+        comment.childCommentId.indexOf(commentId),
+        1
+      );
+      await comment.save();
+      await ReplyComment.findByIdAndDelete(commentId);
+      return res
+        .status(200)
+        .json({ ok: true, message: "Reply comment delete success" });
+    }
     // Post의 comments 배열에서 comment삭제
     const post = await Post.findOne({ _id: postId, writer: userId });
     if (!post) {
@@ -69,7 +81,7 @@ exports.deleteComment = async (req, res, next) => {
     post.comments.splice(post.comments.indexOf(commentId), 1);
     await post.save();
     // Comment 삭제
-    await Comment.findByIdAndDelete(commentId);
+    await Comment.deleteOne({ _id: commentId });
     return res
       .status(200)
       .json({ ok: true, message: "Comment delete complete" });

@@ -10,7 +10,8 @@ const {
 const router = express.Router();
 
 router.post("/", isAuth, writeComment);
-router.delete("/:commentId", isAuth, deleteComment);
+// router.delete("/:postId/:commentId", isAuth, deleteComment);
+router.delete("/", isAuth, deleteComment);
 router.put("/:commentId/like", isAuth, commentLikeUnlike);
 
 module.exports = router;
