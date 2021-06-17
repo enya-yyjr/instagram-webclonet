@@ -95,9 +95,42 @@ exports.deletePost = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   try {
     // Post 전체 조회
-    const posts = await Post.find({})
-      .populate("writer", { userId: 1 })
-      .populate("comments");
+    // const posts = await Post.find({})
+    //   .populate("writer", { userId: 1 })
+    //   .populate("comments");
+    const posts = await Post.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          // localField: "writer",
+          // foreignField: "_id",
+          let: { writer: "$writer" },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ["$_id", "$$writer"] } },
+            },
+            {
+              $project: {
+                password: 0,
+                like: 0,
+                follow: 0,
+                follower: 0,
+                __v: 0,
+              },
+            },
+          ],
+          as: "writer",
+        },
+      },
+      {
+        $lookup: {
+          from: "comments",
+          localField: "_id",
+          foreignField: "postId",
+          as: "comments",
+        },
+      },
+    ]);
     if (!posts) {
       return res.status(400).json({ message: "Cannot find posts" });
     }
