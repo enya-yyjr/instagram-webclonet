@@ -51,35 +51,20 @@ exports.writeComment = async (req, res, next) => {
 
 exports.deleteComment = async (req, res, next) => {
   const {
-    userId,
-    // params: { postId, commentId },
-    query: { postId, pCommentId, commentId },
+    params: { commentId },
+    query: { isReply },
   } = req;
   try {
-    if (pCommentId) {
-      const comment = await Comment.findById(pCommentId);
-      comment.childCommentId.splice(
-        comment.childCommentId.indexOf(commentId),
-        1
-      );
-      await comment.save();
-      await ReplyComment.findByIdAndDelete(commentId);
+    if (isReply === "true") {
+      await ReplyComment.deleteOne({ _id: commentId });
       return res
         .status(200)
         .json({ ok: true, message: "Reply comment delete success" });
     }
-    // Post의 comments 배열에서 comment삭제
-    const post = await Post.findOne({ _id: postId, writer: userId });
-    if (!post) {
-      return res.status(400).json({ message: "Cannot find post" });
-    }
-    post.comments.splice(post.comments.indexOf(commentId), 1);
-    await post.save();
-    // Comment 삭제
     await Comment.deleteOne({ _id: commentId });
     return res
       .status(200)
-      .json({ ok: true, message: "Comment delete complete" });
+      .json({ ok: true, message: "Comment delete success" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
