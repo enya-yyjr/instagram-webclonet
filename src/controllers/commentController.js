@@ -56,12 +56,18 @@ exports.deleteComment = async (req, res, next) => {
   } = req;
   try {
     if (isReply === "true") {
-      await ReplyComment.deleteOne({ _id: commentId });
+      const { deletedCount } = await ReplyComment.deleteOne({ _id: commentId });
+      if (!deletedCount) {
+        return res.status(400).json({ message: "Reply comment delete fail" });
+      }
       return res
         .status(200)
         .json({ ok: true, message: "Reply comment delete success" });
     }
-    await Comment.deleteOne({ _id: commentId });
+    const { deletedCount } = await Comment.deleteOne({ _id: commentId });
+    if (!deletedCount) {
+      return res.status(400).json({ message: "Comment delete fail" });
+    }
     return res
       .status(200)
       .json({ ok: true, message: "Comment delete success" });
