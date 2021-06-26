@@ -125,8 +125,30 @@ exports.getPosts = async (req, res, next) => {
       {
         $lookup: {
           from: "comments",
-          localField: "_id",
-          foreignField: "postId",
+          let: { id: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$postId", "$$id"] } } },
+            { $project: { __v: 0 } },
+            {
+              $lookup: {
+                from: "users",
+                let: { writer: "$writer" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+                  {
+                    $project: {
+                      password: 0,
+                      like: 0,
+                      follow: 0,
+                      follower: 0,
+                      __v: 0,
+                    },
+                  },
+                ],
+                as: "writer",
+              },
+            },
+          ],
           as: "comments",
         },
       },
