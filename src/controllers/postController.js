@@ -204,9 +204,51 @@ exports.postDetail = async (req, res, next) => {
             { $project: { __v: 0 } },
             {
               $lookup: {
+                from: "users",
+                let: { writer: "$writer" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+                  {
+                    $project: {
+                      password: 0,
+                      like: 0,
+                      follow: 0,
+                      follower: 0,
+                      __v: 0,
+                    },
+                  },
+                ],
+                as: "writer",
+              },
+            },
+            {
+              $lookup: {
                 from: "replycomments",
-                localField: "_id",
-                foreignField: "parentsId",
+                // localField: "_id",
+                // foreignField: "parentsId",
+                let: { id: "$_id" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$parentsId", "$$id"] } } },
+                  {
+                    $lookup: {
+                      from: "users",
+                      let: { writer: "$writer" },
+                      pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+                        {
+                          $project: {
+                            password: 0,
+                            like: 0,
+                            follow: 0,
+                            follower: 0,
+                            __v: 0,
+                          },
+                        },
+                      ],
+                      as: "writer",
+                    },
+                  },
+                ],
                 as: "childComments",
               },
             },
