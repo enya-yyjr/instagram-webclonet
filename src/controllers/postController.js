@@ -152,6 +152,7 @@ exports.getPosts = async (req, res, next) => {
           as: "comments",
         },
       },
+      { $sort: { createdAt: -1 } },
     ]);
     if (!posts) {
       return res.status(400).json({ message: "Cannot find posts" });
@@ -248,10 +249,12 @@ exports.postDetail = async (req, res, next) => {
                       as: "writer",
                     },
                   },
+                  { $sort: { createdAt: -1 } },
                 ],
                 as: "childComments",
               },
             },
+            { $sort: { createdAt: -1 } },
           ],
           as: "comments",
         },
