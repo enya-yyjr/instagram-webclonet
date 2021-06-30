@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 
 const replyCommentSchema = new mongoose.Schema({
   postId: { type: mongoose.Schema.Types.ObjectId },
-  writer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  taggedPerson: { type: String },
-  contents: { type: String },
   parentsId: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
+  writer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  contents: { type: String },
+  taggedPerson: [{ type: String }],
+  hashtags: [{ type: String }],
   createdAt: { type: String },
   like: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });

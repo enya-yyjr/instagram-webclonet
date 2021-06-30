@@ -7,42 +7,40 @@ const moment = require("../moment");
 exports.writeComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId, commentId, taggedPerson, contents },
+    body: { postId, parentsId, contents },
   } = req;
   try {
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(400).json({ message: "Post not exist" });
     }
-    // 대댓글
-    if (commentId && taggedPerson) {
+    const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
+    const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
+    if (parentsId) {
       const reComment = await ReplyComment.create({
         postId: postId,
+        parentsId: parentsId,
         writer: userId,
-        parentsId: commentId,
-        taggedPerson: "@" + taggedPerson,
+        hashtags: hashtags,
+        taggedPerson: taggedPerson,
         contents: contents,
         createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
       });
-      const parentsComment = await Comment.findById(commentId);
-      parentsComment.childCommentId.push(reComment._id);
-      await parentsComment.save();
       return res
         .status(201)
-        .json({ ok: true, message: "Comment write complete", reComment });
+        .json({ ok: true, message: "Reply Comment write complete", reComment });
     }
-    // 댓글
     const comment = await Comment.create({
       postId: postId,
       writer: userId,
+      hashtags: hashtags,
+      taggedPerson: taggedPerson,
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
-    post.comments.push(comment._id);
-    await post.save();
     return res
       .status(201)
-      .json({ ok: true, message: "Comment write complete", comment: comment });
+      .json({ ok: true, message: "Comment write complete", comment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -53,23 +51,26 @@ exports.writeComment = async (req, res, next) => {
 
 exports.deleteComment = async (req, res, next) => {
   const {
-    userId,
-    body: { postId },
     params: { commentId },
+    query: { isReply },
   } = req;
   try {
-    // Post의 comments 배열에서 comment삭제
-    const post = await Post.findOne({ _id: postId, writer: userId });
-    if (!post) {
-      return res.status(400).json({ message: "Cannot find post" });
+    if (isReply === "true") {
+      const { deletedCount } = await ReplyComment.deleteOne({ _id: commentId });
+      if (!deletedCount) {
+        return res.status(400).json({ message: "Reply comment delete fail" });
+      }
+      return res
+        .status(200)
+        .json({ ok: true, message: "Reply comment delete success" });
     }
-    post.comments.splice(post.comments.indexOf(commentId), 1);
-    await post.save();
-    // Comment 삭제
-    await Comment.findByIdAndDelete(commentId);
+    const { deletedCount } = await Comment.deleteOne({ _id: commentId });
+    if (!deletedCount) {
+      return res.status(400).json({ message: "Comment delete fail" });
+    }
     return res
       .status(200)
-      .json({ ok: true, message: "Comment delete complete" });
+      .json({ ok: true, message: "Comment delete success" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

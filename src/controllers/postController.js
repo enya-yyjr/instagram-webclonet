@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const Post = require("../models/post");
 const Comment = require("../models/comment");
 const moment = require("../moment");
@@ -93,9 +95,65 @@ exports.deletePost = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   try {
     // Post 전체 조회
-    const posts = await Post.find({})
-      .populate("writer", { userId: 1 })
-      .populate("comments");
+    // const posts = await Post.find({})
+    //   .populate("writer", { userId: 1 })
+    //   .populate("comments");
+    const posts = await Post.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          // localField: "writer",
+          // foreignField: "_id",
+          let: { writer: "$writer" },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ["$_id", "$$writer"] } },
+            },
+            {
+              $project: {
+                password: 0,
+                like: 0,
+                follow: 0,
+                follower: 0,
+                __v: 0,
+              },
+            },
+          ],
+          as: "writer",
+        },
+      },
+      {
+        $lookup: {
+          from: "comments",
+          let: { id: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$postId", "$$id"] } } },
+            { $project: { __v: 0 } },
+            {
+              $lookup: {
+                from: "users",
+                let: { writer: "$writer" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+                  {
+                    $project: {
+                      password: 0,
+                      like: 0,
+                      follow: 0,
+                      follower: 0,
+                      __v: 0,
+                    },
+                  },
+                ],
+                as: "writer",
+              },
+            },
+          ],
+          as: "comments",
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
     if (!posts) {
       return res.status(400).json({ message: "Cannot find posts" });
     }
@@ -111,14 +169,101 @@ exports.getPosts = async (req, res, next) => {
 exports.postDetail = async (req, res, next) => {
   const { postId } = req.params;
   try {
-    const post = await Post.findById(postId).populate("writer", { userId: 1 });
-    const comment = await Comment.find({ postId: postId }).populate(
-      "childCommentId"
-    );
+    const post = await Post.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(postId) },
+      },
+      {
+        $lookup: {
+          from: "users",
+          // localField: "writer",
+          // foreignField: "_id",
+          let: { writer: "$writer" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+            {
+              $project: {
+                password: 0,
+                like: 0,
+                follow: 0,
+                follower: 0,
+                __v: 0,
+              },
+            },
+          ],
+          as: "writer",
+        },
+      },
+      {
+        $lookup: {
+          from: "comments",
+          // localField: "_id",
+          // foreignField: "postId",
+          let: { id: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$postId", "$$id"] } } },
+            { $project: { __v: 0 } },
+            {
+              $lookup: {
+                from: "users",
+                let: { writer: "$writer" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+                  {
+                    $project: {
+                      password: 0,
+                      like: 0,
+                      follow: 0,
+                      follower: 0,
+                      __v: 0,
+                    },
+                  },
+                ],
+                as: "writer",
+              },
+            },
+            {
+              $lookup: {
+                from: "replycomments",
+                // localField: "_id",
+                // foreignField: "parentsId",
+                let: { id: "$_id" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$parentsId", "$$id"] } } },
+                  {
+                    $lookup: {
+                      from: "users",
+                      let: { writer: "$writer" },
+                      pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+                        {
+                          $project: {
+                            password: 0,
+                            like: 0,
+                            follow: 0,
+                            follower: 0,
+                            __v: 0,
+                          },
+                        },
+                      ],
+                      as: "writer",
+                    },
+                  },
+                  { $sort: { createdAt: -1 } },
+                ],
+                as: "childComments",
+              },
+            },
+            { $sort: { createdAt: -1 } },
+          ],
+          as: "comments",
+        },
+      },
+    ]);
     if (!post) {
       return res.status(400).json({ message: "Cannot find post" });
     }
-    return res.status(200).json({ ok: true, post, comment });
+    return res.status(200).json({ ok: true, post });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
