@@ -284,7 +284,7 @@ exports.postLikeUnlike = async (req, res, next) => {
     }
     // 이미 좋아요를 누른 경우
     if (post.likeUsers.includes(userId)) {
-      post.likeUsers.splice(post.likeUsers.indexOf(userId), 1);
+      post.likeUsers.pull(userId);
       await post.save();
       return res.status(200).json({ ok: true, message: "Unlike success" });
     }

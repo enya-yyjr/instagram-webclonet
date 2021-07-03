@@ -95,7 +95,7 @@ exports.commentLikeUnlike = async (req, res, next) => {
       }
       // 대댓글 데이터가 있는 경우 좋아요 삭제
       if (reComment.like.includes(userId)) {
-        reComment.like.splice(reComment.like.indexOf(userId), 1);
+        reComment.like.pull(userId);
         await reComment.save();
         return res
           .status(200)
