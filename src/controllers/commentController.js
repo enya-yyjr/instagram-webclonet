@@ -38,6 +38,8 @@ exports.writeComment = async (req, res, next) => {
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
+    post.comments.push(comment._id);
+    await post.save();
     return res
       .status(201)
       .json({ ok: true, message: "Comment write complete", comment });
