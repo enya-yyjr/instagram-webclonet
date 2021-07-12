@@ -53,7 +53,7 @@ exports.writeComment = async (req, res, next) => {
 
 exports.deleteComment = async (req, res, next) => {
   const {
-    params: { commentId },
+    params: { postId, commentId },
     query: { isReply },
   } = req;
   try {
@@ -66,10 +66,16 @@ exports.deleteComment = async (req, res, next) => {
         .status(200)
         .json({ ok: true, message: "Reply comment delete success" });
     }
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(400).json({ message: "Cannot find post" });
+    }
     const { deletedCount } = await Comment.deleteOne({ _id: commentId });
     if (!deletedCount) {
       return res.status(400).json({ message: "Comment delete fail" });
     }
+    post.comments.pull(commentId);
+    await post.save();
     return res
       .status(200)
       .json({ ok: true, message: "Comment delete success" });
