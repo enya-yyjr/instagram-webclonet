@@ -93,12 +93,28 @@ exports.deletePost = async (req, res, next) => {
 };
 
 exports.getPosts = async (req, res, next) => {
+  const { userId } = req;
   try {
     // Post 전체 조회
     // const posts = await Post.find({})
     //   .populate("writer", { userId: 1 })
     //   .populate("comments");
     const posts = await Post.aggregate([
+      {
+        $project: {
+          writer: 1,
+          imageUrl: 1,
+          contents: 1,
+          hashtags: 1,
+          likeUsers: 1,
+          createdAt: 1,
+          commentCount: 1,
+          likeCount: 1,
+          isLike: {
+            $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"],
+          },
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -148,6 +164,7 @@ exports.getPosts = async (req, res, next) => {
                 as: "writer",
               },
             },
+            { $sort: { createdAt: -1 } },
           ],
           as: "comments",
         },
