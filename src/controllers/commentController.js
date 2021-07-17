@@ -7,7 +7,8 @@ const moment = require("../moment");
 exports.writeComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId, parentsId, contents },
+    body: { contents },
+    query: { postId, pCommentId },
   } = req;
   try {
     const post = await Post.findById(postId);
@@ -16,10 +17,10 @@ exports.writeComment = async (req, res, next) => {
     }
     const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
     const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
-    if (parentsId) {
+    if (pCommentId) {
       const reComment = await ReplyComment.create({
         postId: postId,
-        parentsId: parentsId,
+        parentsId: pCommentId,
         writer: userId,
         hashtags: hashtags,
         taggedPerson: taggedPerson,
