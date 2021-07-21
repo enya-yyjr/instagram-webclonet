@@ -194,6 +194,20 @@ exports.postDetail = async (req, res, next) => {
         $match: { _id: new mongoose.Types.ObjectId(postId) },
       },
       {
+        $project: {
+          writer: 1,
+          imageUrl: 1,
+          contents: 1,
+          hashtags: 1,
+          comments: 1,
+          likeUsers: 1,
+          createdAt: 1,
+          commentCount: 1,
+          likeCount: 1,
+          isLike: { $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"] },
+        },
+      },
+      {
         $lookup: {
           from: "users",
           // localField: "writer",
