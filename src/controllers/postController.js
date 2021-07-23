@@ -93,12 +93,28 @@ exports.deletePost = async (req, res, next) => {
 };
 
 exports.getPosts = async (req, res, next) => {
+  const { userId } = req;
   try {
     // Post 전체 조회
     // const posts = await Post.find({})
     //   .populate("writer", { userId: 1 })
     //   .populate("comments");
     const posts = await Post.aggregate([
+      {
+        $project: {
+          writer: 1,
+          imageUrl: 1,
+          contents: 1,
+          hashtags: 1,
+          likeUsers: 1,
+          createdAt: 1,
+          commentCount: 1,
+          likeCount: 1,
+          isLike: {
+            $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"],
+          },
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -148,6 +164,7 @@ exports.getPosts = async (req, res, next) => {
                 as: "writer",
               },
             },
+            { $sort: { createdAt: -1 } },
           ],
           as: "comments",
         },
@@ -167,11 +184,28 @@ exports.getPosts = async (req, res, next) => {
 };
 
 exports.postDetail = async (req, res, next) => {
-  const { postId } = req.params;
+  const {
+    userId,
+    params: { postId },
+  } = req;
   try {
     const post = await Post.aggregate([
       {
         $match: { _id: new mongoose.Types.ObjectId(postId) },
+      },
+      {
+        $project: {
+          writer: 1,
+          imageUrl: 1,
+          contents: 1,
+          hashtags: 1,
+          comments: 1,
+          likeUsers: 1,
+          createdAt: 1,
+          commentCount: 1,
+          likeCount: 1,
+          isLike: { $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"] },
+        },
       },
       {
         $lookup: {
@@ -194,15 +228,43 @@ exports.postDetail = async (req, res, next) => {
           as: "writer",
         },
       },
+    ]);
+    if (!post) {
+      return res.status(400).json({ message: "Cannot find post" });
+    }
+    const comment = await Comment.aggregate([
+      { $match: { postId: new mongoose.Types.ObjectId(postId) } },
+      {
+        $project: {
+          postId: 1,
+          writer: 1,
+          contents: 1,
+          taggedPerson: 1,
+          hashtags: 1,
+          createdAt: 1,
+          like: 1,
+          isLike: { $in: [new mongoose.Types.ObjectId(userId), "$like"] },
+        },
+      },
       {
         $lookup: {
-          from: "comments",
-          // localField: "_id",
-          // foreignField: "postId",
+          from: "replycomments",
           let: { id: "$_id" },
           pipeline: [
-            { $match: { $expr: { $eq: ["$postId", "$$id"] } } },
-            { $project: { __v: 0 } },
+            { $match: { $expr: { $eq: ["$parentsId", "$$id"] } } },
+            {
+              $project: {
+                postId: 1,
+                parentsId: 1,
+                writer: 1,
+                contents: 1,
+                taggedPerson: 1,
+                hashtags: 1,
+                createdAt: 1,
+                like: 1,
+                isLike: { $in: [new mongoose.Types.ObjectId(userId), "$like"] },
+              },
+            },
             {
               $lookup: {
                 from: "users",
@@ -222,48 +284,15 @@ exports.postDetail = async (req, res, next) => {
                 as: "writer",
               },
             },
-            {
-              $lookup: {
-                from: "replycomments",
-                // localField: "_id",
-                // foreignField: "parentsId",
-                let: { id: "$_id" },
-                pipeline: [
-                  { $match: { $expr: { $eq: ["$parentsId", "$$id"] } } },
-                  {
-                    $lookup: {
-                      from: "users",
-                      let: { writer: "$writer" },
-                      pipeline: [
-                        { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
-                        {
-                          $project: {
-                            password: 0,
-                            like: 0,
-                            follow: 0,
-                            follower: 0,
-                            __v: 0,
-                          },
-                        },
-                      ],
-                      as: "writer",
-                    },
-                  },
-                  { $sort: { createdAt: -1 } },
-                ],
-                as: "childComments",
-              },
-            },
-            { $sort: { createdAt: -1 } },
           ],
-          as: "comments",
+          as: "childComments",
         },
       },
     ]);
-    if (!post) {
-      return res.status(400).json({ message: "Cannot find post" });
+    if (!comment) {
+      return res.status(400).json({ message: "Cannot find comments" });
     }
-    return res.status(200).json({ ok: true, post });
+    return res.status(200).json({ ok: true, post, comment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -284,7 +313,7 @@ exports.postLikeUnlike = async (req, res, next) => {
     }
     // 이미 좋아요를 누른 경우
     if (post.likeUsers.includes(userId)) {
-      post.likeUsers.splice(post.likeUsers.indexOf(userId), 1);
+      post.likeUsers.pull(userId);
       await post.save();
       return res.status(200).json({ ok: true, message: "Unlike success" });
     }

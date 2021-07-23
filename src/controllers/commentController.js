@@ -7,7 +7,8 @@ const moment = require("../moment");
 exports.writeComment = async (req, res, next) => {
   const {
     userId,
-    body: { postId, parentsId, contents },
+    body: { contents },
+    query: { postId, pCommentId },
   } = req;
   try {
     const post = await Post.findById(postId);
@@ -16,10 +17,10 @@ exports.writeComment = async (req, res, next) => {
     }
     const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
     const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
-    if (parentsId) {
+    if (pCommentId) {
       const reComment = await ReplyComment.create({
         postId: postId,
-        parentsId: parentsId,
+        parentsId: pCommentId,
         writer: userId,
         hashtags: hashtags,
         taggedPerson: taggedPerson,
@@ -38,6 +39,8 @@ exports.writeComment = async (req, res, next) => {
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
+    post.comments.push(comment._id);
+    await post.save();
     return res
       .status(201)
       .json({ ok: true, message: "Comment write complete", comment });
@@ -51,7 +54,7 @@ exports.writeComment = async (req, res, next) => {
 
 exports.deleteComment = async (req, res, next) => {
   const {
-    params: { commentId },
+    params: { postId, commentId },
     query: { isReply },
   } = req;
   try {
@@ -64,10 +67,16 @@ exports.deleteComment = async (req, res, next) => {
         .status(200)
         .json({ ok: true, message: "Reply comment delete success" });
     }
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(400).json({ message: "Cannot find post" });
+    }
     const { deletedCount } = await Comment.deleteOne({ _id: commentId });
     if (!deletedCount) {
       return res.status(400).json({ message: "Comment delete fail" });
     }
+    post.comments.pull(commentId);
+    await post.save();
     return res
       .status(200)
       .json({ ok: true, message: "Comment delete success" });
@@ -95,7 +104,7 @@ exports.commentLikeUnlike = async (req, res, next) => {
       }
       // 대댓글 데이터가 있는 경우 좋아요 삭제
       if (reComment.like.includes(userId)) {
-        reComment.like.splice(reComment.like.indexOf(userId), 1);
+        reComment.like.pull(userId);
         await reComment.save();
         return res
           .status(200)
