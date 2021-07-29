@@ -19,6 +19,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  introdution: {
+    type: String,
+  },
+  website: {
+    type: String,
+  },
+  phoneNum: {
+    type: String,
+  },
+  gender: {
+    type: String,
+  },
+  profileImage: {
+    type: String,
+  },
   like: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -34,18 +49,6 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
     },
   ],
-  intro: {
-    type: String,
-  },
-  phoneNum: {
-    type: String,
-  },
-  gender: {
-    type: String,
-  },
-  profileImage: {
-    type: String,
-  },
 });
 
 module.exports = mongoose.model("User", userSchema);
