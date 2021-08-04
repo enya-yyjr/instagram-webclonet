@@ -7,6 +7,7 @@ require("./db");
 const authRouter = require("./routes/authRouter");
 const postRouter = require("./routes/postRouter");
 const commentRouter = require("./routes/commentRouter");
+const accountsRouter = require("./routes/accountsRouter");
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/post", postRouter);
 app.use("/auth", authRouter);
 app.use("/comment", commentRouter);
+app.use("/accounts", accountsRouter);
 
 app.use((error, req, res, next) => {
   console.log(error);
