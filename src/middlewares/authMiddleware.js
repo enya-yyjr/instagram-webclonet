@@ -1,15 +1,24 @@
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 
-exports.signupValidate = (data) => {
-  const signupSchema = Joi.object({
+exports.userValidate = (data) => {
+  const userSchema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().required().email(),
     userId: Joi.string().required(),
     password: Joi.string().min(6).required(),
   });
 
-  return signupSchema.validate(data);
+  return userSchema.validate(data);
+};
+
+exports.editValidate = (data) => {
+  const editSchema = Joi.object({
+    email: Joi.string().required().email(),
+    userId: Joi.string().required(),
+  });
+
+  return editSchema.validate(data);
 };
 
 exports.isAuth = (req, res, next) => {
