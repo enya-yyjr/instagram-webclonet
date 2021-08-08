@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Post = require("../models/post");
 const Comment = require("../models/comment");
 const moment = require("../moment");
-// const { uploadImage, deleteImage } = require("./imageController");
+const { uploadImage, deleteImage } = require("./imageController");
 
 exports.postUpload = async (req, res, next) => {
   const {
@@ -13,18 +13,18 @@ exports.postUpload = async (req, res, next) => {
   } = req;
   try {
     // 이미지 파일이 없는 경우
-    // if (!file) {
-    //   return res.status(401).json({ message: "Check the file format" });
-    // }
+    if (!file) {
+      return res.status(401).json({ message: "Check the file format" });
+    }
     // 이미지 업로드
-    // const { filename, imageUrl } = await uploadImage(file, userId);
+    const { filename, imageUrl } = await uploadImage(file, userId);
     // JSON.parse
     const { contents, hashtags } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
       writer: userId,
-      // filename: filename,
-      // imageUrl: imageUrl,
+      filename: filename,
+      imageUrl: imageUrl,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),

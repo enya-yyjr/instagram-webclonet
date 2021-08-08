@@ -12,7 +12,7 @@ exports.uploadImage = async (file, userId) => {
       .file(`images/${userId}/${filename}`)
       .createWriteStream()
       .end(file.buffer);
-    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${userId}%2F${filename}?alt=media`;
     return { filename, imageUrl };
   } catch (error) {
     const errors = new Error("Upload error");
