@@ -19,7 +19,7 @@ exports.postUpload = async (req, res, next) => {
     // 이미지 업로드
     const { filename, imageUrl } = await uploadImage(file, userId);
     // JSON.parse
-    const { contents, hashtags } = JSON.parse(data);
+    const { contents, hashtags, commentIsAllowed } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
       writer: userId,
@@ -28,6 +28,7 @@ exports.postUpload = async (req, res, next) => {
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+      commentIsAllowed: commentIsAllowed,
     });
     return res
       .status(201)
