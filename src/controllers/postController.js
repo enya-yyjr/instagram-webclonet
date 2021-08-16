@@ -82,7 +82,8 @@ exports.deletePost = async (req, res, next) => {
     if (!post) {
       return res.status(400).json({ message: "Not exist post" });
     }
-    // await deleteImage(post.filename, userId);
+    // 이미지 삭제
+    await deleteImage(post.filename, userId);
     await Post.deleteOne({ _id: postId });
     return res.status(200).json({ ok: true, message: "Delete complete" });
   } catch (error) {
