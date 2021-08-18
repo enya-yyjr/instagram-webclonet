@@ -6,8 +6,8 @@ exports.uploadImage = async (file, userId) => {
   try {
     // 이미지 업로드
     const ext = path.extname(file.originalname);
-    const fname = path.basename(file.originalname, ext);
-    const filename = `${Date.now()}_${fname}${ext}`;
+    // const fname = path.basename(file.originalname, ext);
+    const filename = `image_${Date.now()}${ext}`;
     await bucket
       .file(`images/${userId}/${filename}`)
       .createWriteStream()
