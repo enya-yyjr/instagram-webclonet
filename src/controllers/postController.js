@@ -115,6 +115,7 @@ exports.getPosts = async (req, res, next) => {
           isLike: {
             $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"],
           },
+          commentIsAllowed: 1,
         },
       },
       {
@@ -207,6 +208,7 @@ exports.postDetail = async (req, res, next) => {
           commentCount: 1,
           likeCount: 1,
           isLike: { $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"] },
+          commentIsAllowed: 1,
         },
       },
       {
