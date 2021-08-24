@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Post = require("../models/post");
 const Comment = require("../models/comment");
 const moment = require("../moment");
-// const { uploadImage, deleteImage } = require("./imageController");
+const { uploadImage, deleteImage } = require("./imageController");
 
 exports.postUpload = async (req, res, next) => {
   const {
@@ -13,21 +13,22 @@ exports.postUpload = async (req, res, next) => {
   } = req;
   try {
     // 이미지 파일이 없는 경우
-    // if (!file) {
-    //   return res.status(401).json({ message: "Check the file format" });
-    // }
+    if (!file) {
+      return res.status(401).json({ message: "Check the file format" });
+    }
     // 이미지 업로드
-    // const { filename, imageUrl } = await uploadImage(file, userId);
+    const { filename, imageUrl } = await uploadImage(file, userId);
     // JSON.parse
-    const { contents, hashtags } = JSON.parse(data);
+    const { contents, hashtags, commentIsAllowed } = JSON.parse(data);
     // 게시글 생성
     const post = await Post.create({
       writer: userId,
-      // filename: filename,
-      // imageUrl: imageUrl,
+      filename: filename,
+      imageUrl: imageUrl,
       contents: contents,
       hashtags: hashtags,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+      commentIsAllowed: commentIsAllowed,
     });
     return res
       .status(201)
@@ -81,7 +82,8 @@ exports.deletePost = async (req, res, next) => {
     if (!post) {
       return res.status(400).json({ message: "Not exist post" });
     }
-    // await deleteImage(post.filename, userId);
+    // 이미지 삭제
+    await deleteImage(post.filename, userId);
     await Post.deleteOne({ _id: postId });
     return res.status(200).json({ ok: true, message: "Delete complete" });
   } catch (error) {
@@ -113,6 +115,7 @@ exports.getPosts = async (req, res, next) => {
           isLike: {
             $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"],
           },
+          commentIsAllowed: 1,
         },
       },
       {
@@ -205,6 +208,7 @@ exports.postDetail = async (req, res, next) => {
           commentCount: 1,
           likeCount: 1,
           isLike: { $in: [new mongoose.Types.ObjectId(userId), "$likeUsers"] },
+          commentIsAllowed: 1,
         },
       },
       {

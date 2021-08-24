@@ -15,6 +15,12 @@ exports.writeComment = async (req, res, next) => {
     if (!post) {
       return res.status(400).json({ message: "Post not exist" });
     }
+    // commentIsAllowed가 false이면 댓글 작성 금지
+    if (!post.commentIsAllowed) {
+      return res
+        .status(404)
+        .json({ message: "Comment write permission denied" });
+    }
     const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
     const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
     if (pCommentId) {

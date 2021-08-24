@@ -6,13 +6,13 @@ exports.uploadImage = async (file, userId) => {
   try {
     // 이미지 업로드
     const ext = path.extname(file.originalname);
-    const fname = path.basename(file.originalname, ext);
-    const filename = `${Date.now()}_${fname}${ext}`;
+    // const fname = path.basename(file.originalname, ext);
+    const filename = `image_${Date.now()}${ext}`;
     await bucket
       .file(`images/${userId}/${filename}`)
       .createWriteStream()
       .end(file.buffer);
-    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${filename}?alt=media`;
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/images%2F${userId}%2F${filename}?alt=media`;
     return { filename, imageUrl };
   } catch (error) {
     const errors = new Error("Upload error");

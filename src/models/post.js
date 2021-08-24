@@ -18,6 +18,7 @@ const postSchema = new mongoose.Schema({
   createdAt: { type: String, required: true },
   commentCount: { type: Number, default: 0 },
   likeCount: { type: Number, default: 0 },
+  commentIsAllowed: { type: Boolean, default: true },
 });
 
 postSchema.pre("save", async function (next) {
