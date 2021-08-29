@@ -1,5 +1,7 @@
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { editValidate } = require("../middlewares/authMiddleware");
+const { passwordValidate } = require("../middlewares/authMiddleware");
 
 // 프론트로 유저정보 보내줌.
 exports.userinfo = async (req, res, next) => {
@@ -23,6 +25,7 @@ exports.userinfo = async (req, res, next) => {
   }
 };
 
+// 유저 프로필 편집
 exports.edit = async (req, res, next) => {
   const { name, userId, website, introdution, email, phoneNum, gender } =
     req.body;
@@ -56,6 +59,45 @@ exports.edit = async (req, res, next) => {
     user.gender = gender;
     await user.save();
     return res.json({ ok: true });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+// 비밀번호 변경
+exports.passwordChange = async (req, res, next) => {
+  const { prevPwd, newPwd, newPwdCheck } = req.body;
+  const user = await User.findById(req.userId);
+  const { error } = passwordValidate({ newPwd, newPwdCheck });
+  if (error) return res.status(400).json(error.details[0].message);
+  try {
+    if (!user) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "사용자를 찾을 수 없습니다" });
+    }
+    // 입력한 이전 비밀번호와 DB에 있는 비밀번호 비교
+    const equalPassword = await bcrypt.compare(prevPwd, user.password);
+    if (!equalPassword) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "비밀번호가 일치하지 않습니다" });
+    }
+    // 새 비밀번호 두가지 비교
+    if (newPwd !== newPwdCheck) {
+      return res.status(404).json({
+        ok: false,
+        error: "새 비밀번호가 일치하지 않습니다",
+      });
+    }
+    // 비밀번호 hash
+    const newPassword = await bcrypt.hash(newPwd, 12);
+    user.password = newPassword;
+    await user.save();
+    return res.json({ ok: true, message: "비밀번호 변경 완료" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
