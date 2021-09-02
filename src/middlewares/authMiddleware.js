@@ -8,7 +8,6 @@ exports.userValidate = (data) => {
     userId: Joi.string().required(),
     password: Joi.string().min(6).required(),
   });
-
   return userSchema.validate(data);
 };
 
@@ -17,8 +16,15 @@ exports.editValidate = (data) => {
     email: Joi.string().required().email(),
     userId: Joi.string().required(),
   });
-
   return editSchema.validate(data);
+};
+
+exports.passwordValidate = (data) => {
+  const passwordSchema = Joi.object({
+    newPwd: Joi.string().min(6).required(),
+    newPwdCheck: Joi.string().min(6).required(),
+  });
+  return passwordSchema.validate(data);
 };
 
 exports.isAuth = (req, res, next) => {
