@@ -32,7 +32,7 @@ exports.getOwnerPost = async (req, res, next) => {
           totalPost: { $size: "$posts" },
           totalFollow: { $size: "$follow" },
           totalFollower: { $size: "$follower" },
-          isFollow: { $in: [new mongoose.Types.ObjectId(userId), "$follow"] },
+          isFollow: { $in: [new mongoose.Types.ObjectId(userId), "$follower"] },
         },
       },
     ]);
