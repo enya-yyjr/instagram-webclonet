@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const Post = require("../models/post");
 const Comment = require("../models/comment");
+const User = require("../models/user");
 const moment = require("../moment");
 const { uploadImage, deleteImage } = require("./imageController");
 
@@ -329,6 +330,33 @@ exports.postLikeUnlike = async (req, res, next) => {
     if (!error.statusCode) {
       error.statusCode = 500;
       error.message = "Post like/unlike failed";
+    }
+    next(error);
+  }
+};
+
+exports.savePost = async (req, res, next) => {
+  const {
+    userId,
+    params: { postId },
+  } = req;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "Cannot find user" });
+    }
+    if (user.savedPost.includes(postId)) {
+      user.savedPost.pull(postId);
+      await user.save();
+      return res.status(200).json({ ok: true, message: "Post delete success" });
+    }
+    user.savedPost.push(postId);
+    await user.save();
+    return res.status(200).json({ ok: true, message: "Post save success" });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+      error.message = "Post save fail";
     }
     next(error);
   }
