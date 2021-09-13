@@ -55,3 +55,21 @@ exports.getOwnerPost = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getSavedPost = async (req, res, next) => {
+  const { userId } = req;
+  try {
+    const user = await User.findById(userId).populate("savedPost", {
+      imageUrl: 1,
+      commentCount: 1,
+      likeCount: 1,
+    });
+    const savedPost = user.savedPost;
+    return res.status(200).json({ ok: true, savedPost });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
