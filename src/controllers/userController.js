@@ -47,25 +47,11 @@ exports.getOwnerPost = async (req, res, next) => {
       },
       { $sort: { createdAt: -1 } },
     ]);
-    return res.status(200).json({ ok: true, user, post });
-  } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
-    next(error);
-  }
-};
-
-exports.getSavedPost = async (req, res, next) => {
-  const { userId } = req;
-  try {
-    const user = await User.findById(userId).populate("savedPost", {
-      imageUrl: 1,
-      commentCount: 1,
-      likeCount: 1,
-    });
-    const savedPost = user.savedPost;
-    return res.status(200).json({ ok: true, savedPost });
+    const userWithSavedPost = await User.findById(userId, {
+      savedPost: 1,
+    }).populate("savedPost", { imageUrl: 1, commentCount: 1, likeCount: 1 });
+    const savedPost = userWithSavedPost.savedPost;
+    return res.status(200).json({ ok: true, user, post, savedPost });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
