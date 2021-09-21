@@ -49,6 +49,9 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
     },
   ],
+  savedPost: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Post", default: [] },
+  ],
 });
 
 module.exports = mongoose.model("User", userSchema);
