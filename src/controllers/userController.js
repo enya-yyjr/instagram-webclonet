@@ -10,7 +10,7 @@ exports.getOwnerPost = async (req, res, next) => {
   } = req;
   try {
     const user = await User.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(id) } },
+      { $match: { userId: id } },
       {
         $lookup: {
           from: "posts",
@@ -36,8 +36,10 @@ exports.getOwnerPost = async (req, res, next) => {
         },
       },
     ]);
+    const writer = await User.findOne({ userId: id }, { _id: 1 });
+    console.log(writer._id);
     const post = await Post.aggregate([
-      { $match: { writer: new mongoose.Types.ObjectId(id) } },
+      { $match: { writer: writer._id } },
       {
         $project: {
           imageUrl: 1,
@@ -47,9 +49,12 @@ exports.getOwnerPost = async (req, res, next) => {
       },
       { $sort: { createdAt: -1 } },
     ]);
-    const userWithSavedPost = await User.findById(userId, {
-      savedPost: 1,
-    }).populate("savedPost", { imageUrl: 1, commentCount: 1, likeCount: 1 });
+    const userWithSavedPost = await User.findOne(
+      { userId: id },
+      {
+        savedPost: 1,
+      }
+    ).populate("savedPost", { imageUrl: 1, commentCount: 1, likeCount: 1 });
     const savedPost = userWithSavedPost.savedPost;
     return res.status(200).json({ ok: true, user, post, savedPost });
   } catch (error) {
