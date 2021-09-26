@@ -37,7 +37,6 @@ exports.getOwnerPost = async (req, res, next) => {
       },
     ]);
     const writer = await User.findOne({ userId: id }, { _id: 1 });
-    console.log(writer._id);
     const post = await Post.aggregate([
       { $match: { writer: writer._id } },
       {
