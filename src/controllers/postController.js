@@ -253,6 +253,19 @@ exports.postDetail = async (req, res, next) => {
       },
       {
         $lookup: {
+          from: "users",
+          let: { writer: "$writer" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+            {
+              $project: { _id: 1, userId: 1 },
+            },
+          ],
+          as: "writer",
+        },
+      },
+      {
+        $lookup: {
           from: "replycomments",
           let: { id: "$_id" },
           pipeline: [
