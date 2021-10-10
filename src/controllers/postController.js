@@ -222,17 +222,14 @@ exports.postDetail = async (req, res, next) => {
             { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
             {
               $project: {
-                password: 0,
-                like: 0,
-                follow: 0,
-                follower: 0,
-                __v: 0,
+                userId: 1,
               },
             },
           ],
           as: "writer",
         },
       },
+      { $unwind: "$writer" },
     ]);
     if (!post) {
       return res.status(400).json({ message: "Cannot find post" });
@@ -251,6 +248,20 @@ exports.postDetail = async (req, res, next) => {
           isLike: { $in: [new mongoose.Types.ObjectId(userId), "$like"] },
         },
       },
+      {
+        $lookup: {
+          from: "users",
+          let: { writer: "$writer" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
+            {
+              $project: { _id: 1, userId: 1 },
+            },
+          ],
+          as: "writer",
+        },
+      },
+      { $unwind: "$writer" },
       {
         $lookup: {
           from: "replycomments",
@@ -278,17 +289,14 @@ exports.postDetail = async (req, res, next) => {
                   { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
                   {
                     $project: {
-                      password: 0,
-                      like: 0,
-                      follow: 0,
-                      follower: 0,
-                      __v: 0,
+                      userId: 1,
                     },
                   },
                 ],
                 as: "writer",
               },
             },
+            { $unwind: "$writer" },
           ],
           as: "childComments",
         },

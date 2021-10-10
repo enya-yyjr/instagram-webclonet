@@ -9,6 +9,8 @@ exports.getOwnerPost = async (req, res, next) => {
     params: { id },
   } = req;
   try {
+    // 사용자 검색
+    const owner = await User.findOne({ userId: id }, { _id: 1 });
     const user = await User.aggregate([
       { $match: { userId: id } },
       {
@@ -32,13 +34,14 @@ exports.getOwnerPost = async (req, res, next) => {
           totalPost: { $size: "$posts" },
           totalFollow: { $size: "$follow" },
           totalFollower: { $size: "$follower" },
-          isFollow: { $in: [new mongoose.Types.ObjectId(userId), "$follower"] },
+          isFollow: {
+            $in: [new mongoose.Types.ObjectId(userId), "$follower"],
+          },
         },
       },
     ]);
-    const writer = await User.findOne({ userId: id }, { _id: 1 });
     const post = await Post.aggregate([
-      { $match: { writer: writer._id } },
+      { $match: { writer: owner._id } },
       {
         $project: {
           imageUrl: 1,
@@ -48,14 +51,19 @@ exports.getOwnerPost = async (req, res, next) => {
       },
       { $sort: { createdAt: -1 } },
     ]);
-    const userWithSavedPost = await User.findOne(
-      { userId: id },
-      {
-        savedPost: 1,
-      }
-    ).populate("savedPost", { imageUrl: 1, commentCount: 1, likeCount: 1 });
-    const savedPost = userWithSavedPost.savedPost;
-    return res.status(200).json({ ok: true, user, post, savedPost });
+    // 로그인한 사용자와 req.params.id가 일치할 경우
+    if (userId === owner._id.toString()) {
+      const userWithSavedPost = await User.findOne(
+        { userId: id },
+        {
+          savedPost: 1,
+        }
+      ).populate("savedPost", { imageUrl: 1, commentCount: 1, likeCount: 1 });
+      const savedPost = userWithSavedPost.savedPost;
+      return res.status(200).json({ ok: true, user, post, savedPost });
+    } else {
+      return res.status(200).json({ ok: true, user, post });
+    }
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
