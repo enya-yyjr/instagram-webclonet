@@ -42,11 +42,13 @@ const userSchema = new mongoose.Schema({
   follow: [
     {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   ],
   follower: [
     {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   ],
   savedPost: [
