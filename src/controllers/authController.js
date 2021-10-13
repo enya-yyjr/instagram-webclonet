@@ -10,6 +10,13 @@ exports.signup = async (req, res) => {
   const { email, name, userId, password } = req.body;
   const existEmail = await User.findOne({ email });
   const existUserId = await User.findOne({ userId });
+  const reqex = /^[\w][a-z0-9_.]{3,27}[^_][\w]$/;
+  const result = userId.match(reqex);
+  if (result === null) {
+    return res
+      .status(400)
+      .json({ error: "소문자, 숫자, 밑줄 및 마침표만 사용할 수 있습니다" });
+  }
   try {
     if (existEmail) {
       return res.status(400).json({ error: "이메일이 존재합니다" });
