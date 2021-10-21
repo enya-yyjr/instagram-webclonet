@@ -12,8 +12,8 @@ const router = express.Router();
 
 router.get("/:id", isAuth, getOwnerPost);
 
-router.get("/followers/:id", isAuth, getfollowers);
-router.get("/following/:id", isAuth, getfollowing);
+router.get("/followers/:id", getfollowers);
+router.get("/following/:id", getfollowing);
 router.put("/follow/:id", isAuth, follow);
 
 module.exports = router;
