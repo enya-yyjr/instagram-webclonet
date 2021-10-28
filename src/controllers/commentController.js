@@ -8,7 +8,7 @@ exports.writeComment = async (req, res, next) => {
   const {
     userId,
     body: { contents },
-    query: { postId, pCommentId },
+    params: { postId },
   } = req;
   try {
     const post = await Post.findById(postId);
@@ -23,20 +23,6 @@ exports.writeComment = async (req, res, next) => {
     }
     const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
     const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
-    if (pCommentId) {
-      const reComment = await ReplyComment.create({
-        postId: postId,
-        parentsId: pCommentId,
-        writer: userId,
-        hashtags: hashtags,
-        taggedPerson: taggedPerson,
-        contents: contents,
-        createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
-      });
-      return res
-        .status(201)
-        .json({ ok: true, message: "Reply Comment write complete", reComment });
-    }
     const comment = await Comment.create({
       postId: postId,
       writer: userId,
@@ -50,6 +36,35 @@ exports.writeComment = async (req, res, next) => {
     return res
       .status(201)
       .json({ ok: true, message: "Comment write complete", comment });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+exports.writeReplyComment = async (req, res, next) => {
+  const {
+    userId,
+    body: { contents },
+    params: { postId, commentId },
+  } = req;
+  try {
+    const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
+    const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
+    const reComment = await ReplyComment.create({
+      postId: postId,
+      parentsId: commentId,
+      writer: userId,
+      hashtags: hashtags,
+      taggedPerson: taggedPerson,
+      contents: contents,
+      createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+    });
+    return res
+      .status(201)
+      .json({ ok: true, message: "Reply Comment write complete", reComment });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
