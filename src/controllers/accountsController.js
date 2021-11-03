@@ -2,6 +2,10 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { editValidate } = require("../middlewares/authMiddleware");
 const { passwordValidate } = require("../middlewares/authMiddleware");
+const {
+  uploadProfileImage,
+  deleteProfileImage,
+} = require("../controllers/imageController");
 
 // 프론트로 유저정보 보내줌.
 exports.userinfo = async (req, res, next) => {
@@ -102,6 +106,39 @@ exports.passwordChange = async (req, res, next) => {
     user.password = newPassword;
     await user.save();
     return res.json({ ok: true, message: "비밀번호 변경 완료" });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+// 프로필 이미지 변경
+exports.changeProfileImg = async (req, res, next) => {
+  const { userId, file } = req;
+  try {
+    if (!file) {
+      return res.status(401).json({ message: "Check the file format" });
+    }
+    const user = await User.findById(userId);
+    if (!user.profileImage) {
+      const { filename, profileImgUrl } = await uploadProfileImage(
+        file,
+        userId
+      );
+      user.profileImageName = filename;
+      user.profileImage = profileImgUrl;
+      await user.save();
+    }
+    await deleteProfileImage(user.profileImageName);
+    const { filename, profileImgUrl } = await uploadProfileImage(file, userId);
+    user.profileImageName = filename;
+    user.profileImage = profileImgUrl;
+    await user.save();
+    return res
+      .status(200)
+      .json({ ok: true, message: "Profile update success", user });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
