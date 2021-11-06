@@ -1,4 +1,5 @@
 const path = require("path");
+const sharp = require("sharp");
 
 const { bucket, storageBucket } = require("../firebase");
 
@@ -33,10 +34,14 @@ exports.uploadProfileImage = async (file, userId) => {
   try {
     const ext = path.extname(file.originalname);
     const filename = `profile_${userId}_${Date.now()}${ext}`;
+    const resizedImage = await sharp(file.buffer)
+      .resize({ width: 600 })
+      .withMetadata()
+      .toBuffer();
     await bucket
       .file(`profile/${filename}`)
       .createWriteStream()
-      .end(file.buffer);
+      .end(resizedImage);
     const profileImgUrl = `https://firebasestorage.googleapis.com/v0/b/${storageBucket}/o/profile%2F${filename}?alt=media`;
     return { filename, profileImgUrl };
   } catch (error) {
