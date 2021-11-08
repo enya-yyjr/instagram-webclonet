@@ -203,8 +203,6 @@ exports.postDetail = async (req, res, next) => {
           imageUrl: 1,
           contents: 1,
           hashtags: 1,
-          comments: 1,
-          likeUsers: 1,
           createdAt: 1,
           commentCount: 1,
           likeCount: 1,
@@ -223,6 +221,7 @@ exports.postDetail = async (req, res, next) => {
             {
               $project: {
                 userId: 1,
+                profileImage: 1,
               },
             },
           ],
@@ -255,7 +254,7 @@ exports.postDetail = async (req, res, next) => {
           pipeline: [
             { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
             {
-              $project: { _id: 1, userId: 1 },
+              $project: { userId: 1, profileImage: 1 },
             },
           ],
           as: "writer",
@@ -288,9 +287,7 @@ exports.postDetail = async (req, res, next) => {
                 pipeline: [
                   { $match: { $expr: { $eq: ["$_id", "$$writer"] } } },
                   {
-                    $project: {
-                      userId: 1,
-                    },
+                    $project: { userId: 1, profileImage: 1 },
                   },
                 ],
                 as: "writer",
