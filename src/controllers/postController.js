@@ -130,13 +130,7 @@ exports.getPosts = async (req, res, next) => {
               $match: { $expr: { $eq: ["$_id", "$$writer"] } },
             },
             {
-              $project: {
-                password: 0,
-                like: 0,
-                follow: 0,
-                follower: 0,
-                __v: 0,
-              },
+              $project: { userId: 1, profileImage: 1 },
             },
           ],
           as: "writer",
