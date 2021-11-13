@@ -138,7 +138,7 @@ exports.changeProfileImg = async (req, res, next) => {
     await user.save();
     return res
       .status(200)
-      .json({ ok: true, message: "Profile update success", user });
+      .json({ ok: true, message: "Profile update success" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
