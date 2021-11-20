@@ -31,6 +31,7 @@ exports.getOwnerPost = async (req, res, next) => {
           userId: 1,
           introdution: 1,
           website: 1,
+          profileImage: 1,
           totalPost: { $size: "$posts" },
           totalFollow: { $size: "$follow" },
           totalFollower: { $size: "$follower" },

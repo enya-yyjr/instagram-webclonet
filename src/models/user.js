@@ -31,8 +31,13 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
   },
+  profileImageName: {
+    type: String,
+    default: null,
+  },
   profileImage: {
     type: String,
+    default: null,
   },
   like: [
     {
