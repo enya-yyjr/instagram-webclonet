@@ -130,6 +130,9 @@ exports.changeProfileImg = async (req, res, next) => {
       user.profileImageName = filename;
       user.profileImage = profileImgUrl;
       await user.save();
+      return res
+        .status(200)
+        .json({ ok: true, message: "Profile upload success" });
     }
     await deleteProfileImage(user.profileImageName);
     const { filename, profileImgUrl } = await uploadProfileImage(file, userId);
