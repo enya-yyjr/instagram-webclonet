@@ -360,3 +360,19 @@ exports.savePost = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.showPostLikeUser = async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    const post = await Post.findById(postId, { likeUsers: 1 }).populate(
+      "likeUsers",
+      { userId: 1, name: 1 }
+    );
+    return res.status(200).json({ ok: true, likeUsers: post.likeUsers });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};

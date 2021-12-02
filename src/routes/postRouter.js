@@ -10,6 +10,7 @@ const {
   deletePost,
   postLikeUnlike,
   savePost,
+  showPostLikeUser,
 } = require("../controllers/postController");
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.get("/", isAuth, getPosts);
 router.get("/:postId", isAuth, postDetail);
 router.put("/:postId/like", isAuth, postLikeUnlike);
 router.put("/:postId/save", isAuth, savePost);
+router.get("/:postId/likeUsers", showPostLikeUser);
 
 module.exports = router;
