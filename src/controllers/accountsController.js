@@ -122,6 +122,9 @@ exports.changeProfileImg = async (req, res, next) => {
       return res.status(401).json({ message: "Check the file format" });
     }
     const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User cannot find" });
+    }
     if (!user.profileImage) {
       const { filename, profileImgUrl } = await uploadProfileImage(
         file,
