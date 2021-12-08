@@ -122,6 +122,9 @@ exports.changeProfileImg = async (req, res, next) => {
       return res.status(401).json({ message: "Check the file format" });
     }
     const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User cannot find" });
+    }
     if (!user.profileImage) {
       const { filename, profileImgUrl } = await uploadProfileImage(
         file,
@@ -142,6 +145,29 @@ exports.changeProfileImg = async (req, res, next) => {
     return res
       .status(200)
       .json({ ok: true, message: "Profile update success" });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+// 프로필 이미지 삭제
+exports.deleteProfileImg = async (req, res, next) => {
+  const { userId } = req;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ message: "User cannot find" });
+    }
+    await deleteProfileImage(user.profileImageName);
+    user.profileImageName = null;
+    user.profileImage = null;
+    await user.save();
+    return res
+      .status(200)
+      .json({ ok: true, message: "Profile delete success" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
