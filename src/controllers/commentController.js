@@ -1,3 +1,4 @@
+const User = require("../models/user");
 const Post = require("../models/post");
 const Comment = require("../models/comment");
 const ReplyComment = require("../models/replyComment");
@@ -23,6 +24,7 @@ exports.writeComment = async (req, res, next) => {
     }
     const hashtags = contents.match(/#[0-9a-zA-Z가-힣]+/gi);
     const taggedPerson = contents.match(/@[_0-9a-zA-Z가-힣]+/gi);
+    // 댓글 생성
     const comment = await Comment.create({
       postId: postId,
       writer: userId,
@@ -31,11 +33,20 @@ exports.writeComment = async (req, res, next) => {
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
+    // post.comments에 댓글._id추가
     post.comments.push(comment._id);
     await post.save();
-    return res
-      .status(201)
-      .json({ ok: true, message: "Comment write complete", comment });
+    // Create 한 댓글을 Object로 변환
+    const responseComment = comment.toObject();
+    // 작성자 검색
+    const user = await User.findById(userId, { userId: 1 });
+    // Object화된 reponseComment의 writer에 user.userId를 넣음
+    responseComment.writer = user.userId;
+    return res.status(201).json({
+      ok: true,
+      message: "Comment write complete",
+      comment: responseComment,
+    });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
