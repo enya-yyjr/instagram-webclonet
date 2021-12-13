@@ -73,9 +73,16 @@ exports.writeReplyComment = async (req, res, next) => {
       contents: contents,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     });
+    const responseReComment = reComment.toObject();
+    const user = await User.findById(userId, { userId: 1 });
+    responseReComment.writer = user.userId;
     return res
       .status(201)
-      .json({ ok: true, message: "Reply Comment write complete", reComment });
+      .json({
+        ok: true,
+        message: "Reply Comment write complete",
+        reComment: responseReComment,
+      });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
